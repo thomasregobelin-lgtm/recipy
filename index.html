@@ -3024,80 +3024,112 @@ function renderShoppingList(){
    SWIPE GESTURE
 ═══════════════════════════════════════════ */
 function initSwipeGesture(){
-  var card=document.getElementById("swipe-card");
-  var startX=0,startY=0,isDragging=false,swipeLocked=false;
+  var card = document.getElementById("swipe-card");
+  if(!card) return;
 
-  /* ── Mouse ── */
-  card.addEventListener("mousedown",function(e){
-    startX=e.clientX;startY=e.clientY;isDragging=true;swipeLocked=false;
+  var startX=0, startY=0, isDragging=false, swipeLocked=false, startTime=0;
+  var lastTap=0;
+  var SWIPE_THRESHOLD = 72;
+
+  function onDragMove(dx){
+    card.style.transition = "none";
+    card.style.transform = "translateX("+dx+"px) rotate("+(dx*0.04)+"deg)";
+    document.getElementById("badge-left").style.opacity  = dx < -20 ? Math.min(1,Math.abs(dx)/80) : 0;
+    document.getElementById("badge-right").style.opacity = dx >  20 ? Math.min(1,dx/80) : 0;
+  }
+  function onDragEnd(dx){
+    document.getElementById("badge-left").style.opacity  = 0;
+    document.getElementById("badge-right").style.opacity = 0;
+    if(dx < -SWIPE_THRESHOLD)      doSwipe("left");
+    else if(dx > SWIPE_THRESHOLD)  doSwipe("right");
+    else{ card.style.transition="transform .3s ease"; card.style.transform=""; }
+  }
+
+  /* ─── MOUSE ─────────────────────────────── */
+  card.addEventListener("mousedown", function(e){
+    startX=e.clientX; startY=e.clientY;
+    isDragging=true; swipeLocked=false; startTime=Date.now();
     card.classList.add("dragging");
+    e.preventDefault();
   });
-  document.addEventListener("mousemove",function(e){
+  document.addEventListener("mousemove", function(e){
     if(!isDragging) return;
-    var dx=e.clientX-startX;
-    card.style.transform="translateX("+dx+"px) rotate("+(dx*.046)+"deg)";
-    document.getElementById("badge-left").style.opacity=dx<-18?Math.min(1,Math.abs(dx)/72):0;
-    document.getElementById("badge-right").style.opacity=dx>18?Math.min(1,dx/72):0;
+    onDragMove(e.clientX - startX);
   });
-  document.addEventListener("mouseup",function(e){
+  document.addEventListener("mouseup", function(e){
     if(!isDragging) return;
     isDragging=false; card.classList.remove("dragging");
-    var dx=e.clientX-startX;
-    document.getElementById("badge-left").style.opacity=0;
-    document.getElementById("badge-right").style.opacity=0;
-    if(dx<-80) doSwipe("left");
-    else if(dx>80) doSwipe("right");
-    else{card.style.transition="transform .28s ease";card.style.transform="";}
+    onDragEnd(e.clientX - startX);
   });
 
-  /* ── Touch : listeners sur la CARD uniquement, pas document ── */
-  card.addEventListener("touchstart",function(e){
-    startX=e.touches[0].clientX;
-    startY=e.touches[0].clientY;
-    isDragging=true; swipeLocked=false;
-  },{passive:true});
+  /* ─── TOUCH ─────────────────────────────── */
+  card.addEventListener("touchstart", function(e){
+    var t = e.touches[0];
+    startX=t.clientX; startY=t.clientY;
+    isDragging=true; swipeLocked=false; startTime=Date.now();
+    card.classList.add("dragging");
+  }, {passive:true});
 
-  card.addEventListener("touchmove",function(e){
+  card.addEventListener("touchmove", function(e){
     if(!isDragging) return;
-    var dx=e.touches[0].clientX-startX;
-    var dy=e.touches[0].clientY-startY;
-    /* Verrouiller en swipe horizontal si mouvement majoritairement horizontal */
+    var t  = e.touches[0];
+    var dx = t.clientX - startX;
+    var dy = t.clientY - startY;
+
     if(!swipeLocked){
-      if(Math.abs(dx)>Math.abs(dy)+4) swipeLocked=true;
-      else if(Math.abs(dy)>Math.abs(dx)+4){ isDragging=false; return; }
+      if(Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy)){
+        swipeLocked = true;       // mouvement horizontal → on prend le contrôle
+      } else if(Math.abs(dy) > 10){
+        isDragging = false;       // mouvement vertical → on laisse scroller
+        card.style.transition="transform .3s ease"; card.style.transform="";
+        document.getElementById("badge-left").style.opacity=0;
+        document.getElementById("badge-right").style.opacity=0;
+        return;
+      } else { return; }          // encore indéterminé
     }
-    if(!swipeLocked) return;
-    card.style.transform="translateX("+dx+"px) rotate("+(dx*.046)+"deg)";
-    document.getElementById("badge-left").style.opacity=dx<-18?Math.min(1,Math.abs(dx)/72):0;
-    document.getElementById("badge-right").style.opacity=dx>18?Math.min(1,dx/72):0;
-  },{passive:true});
 
-  card.addEventListener("touchend",function(e){
-    if(!isDragging) return;
-    isDragging=false;
+    e.preventDefault();           // bloque le scroll pendant le swipe horizontal
+    onDragMove(dx);
+  }, {passive:false});             // ← DOIT être false pour pouvoir preventDefault
+
+  card.addEventListener("touchend", function(e){
+    var now = Date.now();
+    card.classList.remove("dragging");
+
+    // Double-tap
+    if(!isDragging || !swipeLocked){
+      if(now - lastTap < 280){
+        var r = currentRecipe();
+        if(r) openDetail(r.id,"main");
+      }
+      lastTap = now;
+      if(!isDragging){ return; }
+    }
+    lastTap = now;
+
+    isDragging = false;
+    var dx = e.changedTouches[0].clientX - startX;
+
+    if(!swipeLocked){
+      card.style.transition="transform .3s ease"; card.style.transform="";
+      document.getElementById("badge-left").style.opacity=0;
+      document.getElementById("badge-right").style.opacity=0;
+      return;
+    }
+    onDragEnd(dx);
+  }, {passive:true});
+
+  card.addEventListener("touchcancel", function(){
+    isDragging=false; swipeLocked=false;
+    card.classList.remove("dragging");
+    card.style.transition="transform .3s ease"; card.style.transform="";
     document.getElementById("badge-left").style.opacity=0;
     document.getElementById("badge-right").style.opacity=0;
-    if(!swipeLocked){card.style.transition="transform .28s ease";card.style.transform="";return;}
-    var dx=e.changedTouches[0].clientX-startX;
-    if(dx<-80) doSwipe("left");
-    else if(dx>80) doSwipe("right");
-    else{card.style.transition="transform .28s ease";card.style.transform="";}
-  },{passive:true});
+  }, {passive:true});
 
-  /* ── Double-tap → détail ── */
-  var lastTap=0;
-  card.addEventListener("touchend",function(e){
-    var now=Date.now();
-    if(now-lastTap<300 && !swipeLocked){
-      var r=currentRecipe();
-      if(r) openDetail(r.id,"main");
-    }
-    lastTap=now;
-  },{passive:true});
-
-  /* ── Double-click (desktop) → détail ── */
-  card.addEventListener("dblclick",function(){
-    var r=currentRecipe();
+  /* ─── Double-click desktop ───────────────── */
+  card.addEventListener("dblclick", function(){
+    var r = currentRecipe();
     if(r) openDetail(r.id,"main");
   });
 }
