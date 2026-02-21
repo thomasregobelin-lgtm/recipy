@@ -1,0 +1,42 @@
+{
+  "name": "Recipy — Planificateur de repas",
+  "short_name": "Recipy",
+  "description": "Swipez, planifiez et faites vos courses intelligemment.",
+  "start_url": "./recipy.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#F5F5F7",
+  "theme_color": "#FF3E7F",
+  "lang": "fr",
+  "categories": ["food", "lifestyle", "utilities"],
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Swiper des recettes",
+      "short_name": "Swipe",
+      "description": "Découvrir de nouvelles recettes",
+      "url": "./recipy.html#main"
+    },
+    {
+      "name": "Liste de courses",
+      "short_name": "Courses",
+      "description": "Voir ma liste de courses",
+      "url": "./recipy.html#shopping"
+    }
+  ]
+}
