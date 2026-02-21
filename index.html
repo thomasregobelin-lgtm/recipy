@@ -289,8 +289,8 @@ html{height:100%;overflow:hidden;}
 ═══════════════════════════════════════════ */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:99;opacity:0;pointer-events:none;transition:opacity .28s;}
 .overlay.show{opacity:1;pointer-events:all;}
-.modal{position:fixed;bottom:0;left:50%;transform:translateX(-50%) translateY(100%);width:100%;max-width:480px;background:var(--white);border-radius:28px 28px 0 0;padding:18px 22px 36px;transition:transform .36s cubic-bezier(.4,0,.2,1);z-index:100;max-height:82%;overflow-y:auto;}
-.modal.open{transform:translateX(-50%) translateY(0);}
+.modal{position:absolute;bottom:0;left:0;right:0;transform:translateY(100%);width:100%;background:var(--white);border-radius:28px 28px 0 0;padding:18px 22px 36px;transition:transform .36s cubic-bezier(.4,0,.2,1);z-index:100;max-height:82%;overflow-y:auto;}
+.modal.open{transform:translateY(0);}
 .modal.open{transform:translateY(0);}
 .modal-handle{width:38px;height:4px;background:var(--gray-light);border-radius:2px;margin:0 auto 16px;}
 .modal-title{font-family:'Playfair Display',Georgia,serif;font-size:20px;font-weight:700;color:var(--dark);margin-bottom:14px;}
