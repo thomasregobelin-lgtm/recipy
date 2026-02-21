@@ -549,6 +549,42 @@ html{height:100%;overflow:hidden;}
 /* Profile button in main header */
 .btn-profile{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#FF3E7F,#FF8C42);border:none;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(255,62,127,.3);transition:transform .15s;}
 .btn-profile:active{transform:scale(.9);}
+
+/* ═══════════════════════════════════════════
+   SAVED — MODE ÉDITION + RECHERCHE PLANNING
+═══════════════════════════════════════════ */
+
+/* Topbar with edit button */
+.saved-topbar{display:flex;justify-content:space-between;align-items:center;padding:14px 20px 6px;flex-shrink:0;}
+.btn-edit-mode{padding:6px 14px;border-radius:20px;border:2px solid var(--gray-light);background:transparent;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;color:var(--gray);cursor:pointer;transition:all .18s;}
+.btn-edit-mode.active{background:var(--pink);border-color:var(--pink);color:#fff;}
+
+/* Edit toolbar (shown in edit mode) */
+.edit-toolbar{display:none;align-items:center;justify-content:space-between;padding:8px 20px;background:#FFF5F8;border-bottom:1px solid #FFD6E5;flex-shrink:0;}
+.edit-toolbar.show{display:flex;}
+.edit-sel-count{font-size:12px;font-weight:700;color:var(--pink);}
+.edit-actions{display:flex;gap:8px;}
+.btn-edit-action{padding:6px 14px;border-radius:20px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;border:none;transition:all .15s;}
+.btn-edit-action.select-all{background:var(--light);color:var(--dark);}
+.btn-edit-action.delete-sel{background:#EF4444;color:#fff;}
+.btn-edit-action.delete-sel:disabled{opacity:.4;cursor:not-allowed;}
+
+/* Checkbox on each row in edit mode */
+.rc-checkbox{width:22px;height:22px;border-radius:7px;border:2px solid #D1D5DB;background:#fff;flex-shrink:0;display:none;align-items:center;justify-content:center;font-size:13px;color:#fff;transition:all .18s;margin-right:2px;}
+.edit-mode .rc-checkbox{display:flex;}
+.edit-mode .rc-chevron{display:none;}
+.rc-row.sel-checked .rc-checkbox{background:var(--pink);border-color:var(--pink);}
+.edit-mode .rc-row{cursor:pointer;}
+.edit-mode .rc-row.expanded{/* keep rows flat in edit mode */}
+.edit-mode .rc-actions{display:none!important;max-height:0!important;}
+
+/* Planning modal search bar */
+.plan-search-wrap{position:relative;margin-bottom:12px;}
+.plan-search-inp{width:100%;padding:10px 14px 10px 36px;border:2px solid var(--gray-light);border-radius:12px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--dark);outline:none;box-sizing:border-box;transition:border-color .18s;}
+.plan-search-inp:focus{border-color:var(--pink);}
+.plan-search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:15px;pointer-events:none;opacity:.45;}
+.plan-search-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:16px;color:var(--gray);cursor:pointer;display:none;padding:0;line-height:1;}
+
 </style>
 </head>
 <body>
@@ -718,6 +754,15 @@ html{height:100%;overflow:hidden;}
     <div class="status-bar"><span>9:41</span><span>▲▲ 🔋</span></div>
     <div class="saved-topbar">
       <div><div class="main-title">Mes Recettes</div><div class="count-label" id="saved-count-label">0 recette</div></div>
+      <button class="btn-edit-mode" id="btn-toggle-edit">Modifier</button>
+    </div>
+    <!-- Edit toolbar -->
+    <div class="edit-toolbar" id="edit-toolbar">
+      <span class="edit-sel-count" id="edit-sel-count">0 sélectionnée</span>
+      <div class="edit-actions">
+        <button class="btn-edit-action select-all" id="btn-sel-all">Tout</button>
+        <button class="btn-edit-action delete-sel" id="btn-del-sel" disabled>🗑 Supprimer</button>
+      </div>
     </div>
     <!-- sel-toolbar kept for JS compat -->
     <div class="sel-toolbar" id="sel-toolbar" style="display:none!important">
@@ -1282,7 +1327,36 @@ steps:[
    steps:["Préchauffer le four à 200°C.","Éplucher et couper les pommes de terre en rondelles, les précuire 10 min à l'eau bouillante.","Faire revenir l'oignon émincé et les lardons dans une poêle.","Beurrer un plat à gratin, disposer une couche de pommes de terre, ajouter les lardons et oignons, répéter.","Verser la crème fraîche, recouvrir de reblochon coupé en deux.","Enfourner 25 min jusqu'à gratinage doré et servir chaud."]},
   {id:47,emoji:"🍝",title:"Pates au Pesto",desc:"Pates rapides avec sauce pesto et parmesan.",tag1:"RAPIDE",tag2:"VEGETARIEN",time:"15 min",grad:"linear-gradient(135deg,#f6d365,#fda085)",
    ing:[["Pates","250 g"],["Pesto","3 c.s."],["Parmesan rape","30 g"],["Sel","Au gout"],["Poivre","Au gout"]],
-   steps:["Cuire les pates, egoutter.","Melanger avec le pesto et parmesan.","Servir chaud."]}
+   steps:["Cuire les pates, egoutter.","Melanger avec le pesto et parmesan.","Servir chaud."]},
+{id:48,emoji:"🥞",title:"Galette Bretonne Complète",
+desc:"Galette de sarrasin traditionnelle garnie de jambon, œuf et fromage.",
+tag1:"FRANÇAIS",tag2:"BRETON",time:"25 min",grad:"linear-gradient(135deg,#fcd3a5,#f9a36c)",
+ing:[["Farine de sarrasin","100g"],["Œuf","1"],["Lait","150ml"],["Jambon","1 tranche"],["Fromage râpé","30g"],["Beurre","10g"],["Sel","Au goût"],["Poivre","Au goût"]],
+steps:["Préparer la pâte en mélangeant farine, œuf, lait et une pincée de sel.","Faire chauffer une poêle avec un peu de beurre.","Verser une louche de pâte et étaler en cercle.","Cuire 2-3 min puis retourner la galette.","Ajouter le jambon, l'œuf et le fromage, plier et laisser cuire 2-3 min supplémentaires.","Servir chaud."]},
+
+{id:49,emoji:"🍳",title:"Omelette Jambon Fromage",
+desc:"Omelette moelleuse au jambon et fromage, servie avec une salade fraîche.",
+tag1:"CLASSIQUE",tag2:"RAPIDE",time:"15 min",grad:"linear-gradient(135deg,#fceabb,#f8b500)",
+ing:[["Œufs","3"],["Jambon","2 tranches"],["Fromage râpé","50g"],["Beurre","10g"],["Sel","Au goût"],["Poivre","Au goût"],["Salade verte","1 poignée"],["Vinaigrette","Au goût"]],
+steps:["Battre les œufs avec sel et poivre.","Faire fondre le beurre dans une poêle.","Verser les œufs battus et cuire à feu moyen.","Ajouter le jambon coupé en dés et le fromage râpé.","Plier l'omelette et cuire encore 1-2 min.","Servir avec la salade assaisonnée."]},
+
+{id:50,emoji:"🥢",title:"Riz aux Poireaux, Carottes et Escalope Marinée",
+desc:"Riz crémeux aux poireaux et carottes accompagné d'une escalope marinée à la sauce soja.",
+tag1:"ASIE",tag2:"PROTÉINÉ",time:"30 min",grad:"linear-gradient(135deg,#fbd3e9,#bb377d)",
+ing:[["Riz","200g"],["Poireaux","2"],["Carottes","2"],["Crème fraîche","15cl"],["Escalope de poulet","1"],["Sauce soja","2 c.s."],["Huile d'olive","1 c.s."],["Sel","Au goût"],["Poivre","Au goût"]],
+steps:["Couper les poireaux et carottes en rondelles fines.","Faire revenir les légumes dans l'huile d'olive 5 min.","Ajouter le riz et remuer 2 min, puis verser 50 cl d'eau et cuire 15 min à feu doux.","Pendant ce temps, faire mariner l'escalope dans la sauce soja 10 min.","Poêler l'escalope 5-7 min de chaque côté.","Incorporer la crème aux légumes et riz, assaisonner.","Servir le riz crémeux accompagné de l'escalope marinée."]},
+
+{id:51,emoji:"🍜",title:"Nouilles Sautées au Porc Caramel",
+desc:"Nouilles sautées aux champignons, carottes, œufs brouillés et porc caramélisé à la sauce soja.",
+tag1:"ASIE",tag2:"ÉPICÉ",time:"30 min",grad:"linear-gradient(135deg,#fceabb,#f8b500)",
+ing:[["Nouilles","200g"],["Porc émincé","150g"],["Champignons","150g"],["Carottes","2"],["Œufs","2"],["Sauce soja","3 c.s."],["Sucre","1 c.s."],["Huile","1 c.s."],["Sel","Au goût"],["Poivre","Au goût"]],
+steps:["Cuire les nouilles selon les instructions et réserver.","Faire revenir les champignons et carottes émincés dans l'huile 5 min.","Battre les œufs et les brouiller dans une poêle séparée.","Dans une poêle, faire caraméliser le porc avec le sucre et la sauce soja.","Ajouter les légumes sautés et les nouilles, mélanger le tout.","Incorporer les œufs brouillés, assaisonner de sel et poivre.","Servir chaud."]},
+
+{id:52,emoji:"🍝",title:"Lasagnes au Bœuf Classiques",
+desc:"Lasagnes traditionnelles à la viande de bœuf hachée, sauce tomate, béchamel et emmental gratiné.",
+tag1:"ITALIEN",tag2:"CLASSIQUE",time:"1h10 min",grad:"linear-gradient(135deg,#f6d365,#fda085)",
+ing:[["Pâtes à lasagnes","1 paquet"],["Viande de bœuf hachée","1kg"],["Oignon","1"],["Carotte","1"],["Ail","1 gousse"],["Huile d'olive","2 c.s."],["Tomate concentrée","2 c.s."],["Bouillon de volaille","15cl"],["Béchamel","1l"],["Emmental râpé","200g"],["Sel","Au goût"],["Poivre","Au goût"]],
+steps:["Préchauffer le four à 180 °C.","Hacher finement l'oignon, la carotte et l'ail.","Faire revenir les légumes dans l'huile d'olive puis ajouter la viande de bœuf et cuire 10 min.","Assaisonner, ajouter le concentré de tomate et le bouillon de volaille.","Dans un plat beurré, étaler un peu de béchamel, ajouter une couche de pâtes puis la viande et de la béchamel.","Répéter les couches jusqu'à épuisement des ingrédients, finir avec la béchamel et l'emmental.","Enfourner 40 min jusqu'à gratinage doré.","Laisser reposer quelques minutes avant de servir."]}
 ];
 
 /* ═══════════════════════════════════════════
@@ -2226,6 +2300,18 @@ function exitSelectMode(){
   renderSavedScreen();
 }
 /* ─── renderSavedScreen — iOS vertical list ──────────────────── */
+/* ── Edit mode state ── */
+var _editMode = false;
+var _selectedIds = {};
+
+function _updateEditToolbar(){
+  var count = Object.keys(_selectedIds).length;
+  var countEl = document.getElementById("edit-sel-count");
+  var delBtn  = document.getElementById("btn-del-sel");
+  if(countEl) countEl.textContent = count + " sélectionnée" + (count > 1 ? "s" : "");
+  if(delBtn)  delBtn.disabled = count === 0;
+}
+
 function renderSavedScreen(){
   var container = document.getElementById("saved-content");
   container.innerHTML = "";
@@ -2234,7 +2320,15 @@ function renderSavedScreen(){
   var countEl = document.getElementById("saved-count-label");
   if(countEl) countEl.textContent = n + (n<=1 ? " recette sauvegardée" : " recettes sauvegardées");
 
+  /* Sync edit toolbar visibility */
+  var toolbar = document.getElementById("edit-toolbar");
+  var editBtn  = document.getElementById("btn-toggle-edit");
+  if(toolbar) toolbar.classList.toggle("show", _editMode);
+  if(editBtn) { editBtn.textContent = _editMode ? "Terminer" : "Modifier"; editBtn.classList.toggle("active", _editMode); }
+  _updateEditToolbar();
+
   if(n === 0){
+    _editMode = false;
     var empty = document.createElement("div");
     empty.className = "empty-state";
     empty.innerHTML = "<div class='ei'>♥</div><h3>Aucune recette</h3><p>Swipez à droite pour sauvegarder des recettes ici.</p>";
@@ -2243,21 +2337,23 @@ function renderSavedScreen(){
   }
 
   var list = document.createElement("div");
-  list.className = "saved-list";
+  list.className = "saved-list" + (_editMode ? " edit-mode" : "");
   var section = document.createElement("div");
   section.className = "saved-section";
 
   state.likedIds.forEach(function(id, idx){
     var r = getRecipe(id);
     if(!r) return;
+    var isChecked = !!_selectedIds[id];
 
     var row = document.createElement("div");
-    row.className = "rc-row";
+    row.className = "rc-row" + (isChecked ? " sel-checked" : "");
     row.setAttribute("data-recipe-id", id);
     row.style.animationDelay = (idx * 45) + "ms";
 
     row.innerHTML =
       "<div class='rc-main'>" +
+        "<div class='rc-checkbox'>" + (isChecked ? "✓" : "") + "</div>" +
         "<div class='rc-photo' style='background:" + r.grad + "'>" +
           "<span>" + r.emoji + "</span>" +
         "</div>" +
@@ -2277,36 +2373,32 @@ function renderSavedScreen(){
         "<button class='rc-action-btn plan' data-plan='" + id + "'>📅 Planning</button>" +
       "</div>";
 
-    /* Toggle expand on main row tap */
     var mainLine = row.querySelector(".rc-main");
     mainLine.addEventListener("click", function(){
+      if(_editMode){
+        /* Toggle selection */
+        if(_selectedIds[id]){ delete _selectedIds[id]; row.classList.remove("sel-checked"); row.querySelector(".rc-checkbox").textContent = ""; }
+        else { _selectedIds[id] = true; row.classList.add("sel-checked"); row.querySelector(".rc-checkbox").textContent = "✓"; }
+        _updateEditToolbar();
+        return;
+      }
+      /* Normal expand */
       var wasExpanded = row.classList.contains("expanded");
-      /* Collapse all others */
-      section.querySelectorAll(".rc-row.expanded").forEach(function(r2){
-        r2.classList.remove("expanded");
-      });
+      section.querySelectorAll(".rc-row.expanded").forEach(function(r2){ r2.classList.remove("expanded"); });
       if(!wasExpanded) row.classList.add("expanded");
     });
 
-    /* Actions */
     row.querySelector("[data-del]").addEventListener("click", function(e){
       e.stopPropagation();
       row.classList.add("card-exit");
-      setTimeout(function(){
-        unlikeRecipe(id);
-        renderSavedScreen();
-      }, 220);
+      setTimeout(function(){ unlikeRecipe(id); renderSavedScreen(); }, 220);
       toast("Recette retirée");
     });
-
     row.querySelector("[data-detail]").addEventListener("click", function(e){
-      e.stopPropagation();
-      openDetail(id, "saved");
+      e.stopPropagation(); openDetail(id, "saved");
     });
-
     row.querySelector("[data-plan]").addEventListener("click", function(e){
-      e.stopPropagation();
-      openPlanningPicker(id);
+      e.stopPropagation(); openPlanningPicker(id);
     });
 
     section.appendChild(row);
@@ -2541,24 +2633,75 @@ function openQuickAddPicker(dayIdx,moment){
     hint.textContent="Sauvegardez d'abord des recettes via le swipe.";
     grid.appendChild(hint);
   } else {
-    state.likedIds.forEach(function(id){
-      var r=getRecipe(id);if(!r) return;
-      var btn=document.createElement("button");
-      btn.style.cssText="grid-column:span 7;width:100%;text-align:left;padding:10px 12px;border-radius:12px;border:2px solid var(--gray-light);background:transparent;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;margin-bottom:6px;transition:all .15s;";
-      btn.innerHTML="<span style='font-size:22px'>"+r.emoji+"</span><div><div style='color:var(--dark)'>"+r.title+"</div><div style='color:var(--gray);font-size:10px;font-weight:400'>"+r.time+" • "+r.tag1+"</div></div>";
-      btn.addEventListener("mouseenter",function(){btn.style.borderColor="var(--pink)";btn.style.background="var(--pink-soft)";});
-      btn.addEventListener("mouseleave",function(){btn.style.borderColor="var(--gray-light)";btn.style.background="transparent";});
-      btn.addEventListener("click",function(){
-        state.weekPlanning[dayIdx+"-"+moment]=id;
-        state.checkedItems={};
-        updateBadges(false);
-        closeModal();
-        renderCalendar();
-        renderShoppingList();
-        toast("📅 "+r.title+" ajoutée !");
+    /* Search bar */
+    var searchWrap = document.createElement("div");
+    searchWrap.className = "plan-search-wrap";
+    searchWrap.style.cssText = "grid-column:span 7;margin-bottom:10px;";
+    searchWrap.innerHTML =
+      "<span class='plan-search-icon'>🔍</span>" +
+      "<input class='plan-search-inp' id='plan-search-inp' type='text' placeholder='Rechercher une recette…' autocomplete='off'>" +
+      "<button class='plan-search-clear' id='plan-search-clear'>✕</button>";
+    grid.appendChild(searchWrap);
+
+    /* Recipe list container */
+    var recipeList = document.createElement("div");
+    recipeList.style.cssText = "grid-column:span 7;";
+    grid.appendChild(recipeList);
+
+    function buildRecipeList(filter){
+      recipeList.innerHTML = "";
+      var ids = state.likedIds;
+      var q = (filter||"").toLowerCase().trim();
+      var found = 0;
+      ids.forEach(function(id){
+        var r=getRecipe(id);if(!r) return;
+        if(q && r.title.toLowerCase().indexOf(q)===-1 && r.tag1.toLowerCase().indexOf(q)===-1) return;
+        found++;
+        var btn=document.createElement("button");
+        btn.style.cssText="width:100%;text-align:left;padding:10px 12px;border-radius:12px;border:2px solid var(--gray-light);background:transparent;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;margin-bottom:6px;transition:all .15s;";
+        btn.innerHTML="<span style='font-size:22px'>"+r.emoji+"</span><div><div style='color:var(--dark)'>"+r.title+"</div><div style='color:var(--gray);font-size:10px;font-weight:400'>"+r.time+" • "+r.tag1+"</div></div>";
+        btn.addEventListener("mouseenter",function(){btn.style.borderColor="var(--pink)";btn.style.background="var(--pink-soft)";});
+        btn.addEventListener("mouseleave",function(){btn.style.borderColor="var(--gray-light)";btn.style.background="transparent";});
+        btn.addEventListener("click",function(){
+          state.weekPlanning[dayIdx+"-"+moment]=id;
+          state.checkedItems={};
+          updateBadges(false);
+          closeModal();
+          renderCalendar();
+          renderShoppingList();
+          toast("📅 "+r.title+" ajoutée !");
+        });
+        recipeList.appendChild(btn);
       });
-      grid.appendChild(btn);
-    });
+      if(found===0){
+        var msg=document.createElement("div");
+        msg.style.cssText="padding:14px 0;color:var(--gray);font-size:13px;text-align:center;";
+        msg.textContent="Aucune recette trouvée";
+        recipeList.appendChild(msg);
+      }
+    }
+
+    buildRecipeList("");
+
+    /* Search events */
+    setTimeout(function(){
+      var inp = document.getElementById("plan-search-inp");
+      var clr = document.getElementById("plan-search-clear");
+      if(inp){
+        inp.addEventListener("input", function(){
+          buildRecipeList(inp.value);
+          if(clr) clr.style.display = inp.value ? "block" : "none";
+        });
+      }
+      if(clr){
+        clr.addEventListener("click", function(){
+          inp.value = "";
+          clr.style.display = "none";
+          buildRecipeList("");
+          inp.focus();
+        });
+      }
+    }, 80);
   }
   openModal("plan-modal");
 }
@@ -3134,6 +3277,31 @@ function init(){
 
   // Profile screen
   initProfileScreen();
+
+  // Saved screen — edit mode
+  var btnToggleEdit = document.getElementById("btn-toggle-edit");
+  if(btnToggleEdit) btnToggleEdit.addEventListener("click", function(){
+    _editMode = !_editMode;
+    _selectedIds = {};
+    renderSavedScreen();
+  });
+  var btnSelAll = document.getElementById("btn-sel-all");
+  if(btnSelAll) btnSelAll.addEventListener("click", function(){
+    var allSelected = state.likedIds.length === Object.keys(_selectedIds).length;
+    if(allSelected){ _selectedIds = {}; }
+    else { state.likedIds.forEach(function(id){ _selectedIds[id] = true; }); }
+    renderSavedScreen();
+  });
+  var btnDelSel = document.getElementById("btn-del-sel");
+  if(btnDelSel) btnDelSel.addEventListener("click", function(){
+    var ids = Object.keys(_selectedIds).map(Number);
+    if(!ids.length) return;
+    ids.forEach(function(id){ unlikeRecipe(id); });
+    _selectedIds = {};
+    _editMode = false;
+    renderSavedScreen();
+    toast("🗑 " + ids.length + " recette" + (ids.length > 1 ? "s" : "") + " supprimée" + (ids.length > 1 ? "s" : ""));
+  });
 
   // Init nav
   initNavBars();
