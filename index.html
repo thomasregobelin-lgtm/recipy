@@ -585,20 +585,81 @@ html{height:100%;overflow:hidden;}
 .plan-search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:15px;pointer-events:none;opacity:.45;}
 .plan-search-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:16px;color:var(--gray);cursor:pointer;display:none;padding:0;line-height:1;}
 
+
+/* ═══════════════════════════════════════════
+   FIREBASE AUTH SCREEN
+═══════════════════════════════════════════ */
+#fb-auth{background:linear-gradient(160deg,#1A1A2E 0%,#16213E 55%,#0F3460 100%);justify-content:center;align-items:center;}
+.fb-auth-logo{font-family:'Playfair Display',Georgia,serif;font-size:48px;font-weight:900;color:#fff;letter-spacing:-1px;margin-bottom:6px;}
+.fb-auth-sub{color:rgba(255,255,255,.5);font-size:13px;margin-bottom:48px;}
+.fb-auth-emoji{font-size:70px;margin-bottom:16px;}
+.fb-auth-box{width:100%;padding:0 28px;display:flex;flex-direction:column;gap:10px;}
+.fb-inp{width:100%;padding:14px 18px;border:2px solid rgba(255,255,255,.15);border-radius:16px;font-family:'DM Sans',sans-serif;font-size:15px;background:rgba(255,255,255,.08);color:#fff;outline:none;box-sizing:border-box;transition:border-color .2s;}
+.fb-inp::placeholder{color:rgba(255,255,255,.35);}
+.fb-inp:focus{border-color:var(--pink);}
+.fb-btn-google{width:100%;padding:15px;background:#fff;color:#1A1A2E;border:none;border-radius:16px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:transform .15s,box-shadow .15s;box-shadow:0 4px 16px rgba(0,0,0,.25);}
+.fb-btn-google:active{transform:scale(.97);}
+.fb-btn-email{width:100%;padding:15px;background:var(--pink);color:#fff;border:none;border-radius:16px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:transform .15s;box-shadow:0 8px 24px rgba(255,62,127,.4);}
+.fb-btn-email:active{transform:scale(.97);}
+.fb-divider{display:flex;align-items:center;gap:12px;color:rgba(255,255,255,.3);font-size:12px;}
+.fb-divider::before,.fb-divider::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.12);}
+.fb-toggle{color:rgba(255,255,255,.5);font-size:12px;text-align:center;cursor:pointer;}
+.fb-toggle span{color:var(--pink);font-weight:700;text-decoration:underline;}
+.fb-error{color:#FF6B9D;font-size:12px;text-align:center;min-height:16px;}
+/* User badge in main header */
+.user-badge{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--gray);max-width:90px;overflow:hidden;}
+.user-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#FF3E7F,#FF8C42);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+/* Sync indicator */
+.sync-dot{width:7px;height:7px;border-radius:50%;background:#10B981;position:absolute;bottom:2px;right:2px;border:1.5px solid #fff;transition:background .3s;}
+.sync-dot.syncing{background:#F59E0B;animation:pulse .8s ease infinite alternate;}
+.sync-dot.offline{background:#EF4444;}
+@keyframes pulse{from{opacity:1;}to{opacity:.3;}}
+
 </style>
+
+<!-- Firebase SDKs via CDN ESM (importmap) -->
+<script type="importmap">
+{
+  "imports": {
+    "firebase/app":       "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js",
+    "firebase/auth":      "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js",
+    "firebase/firestore": "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"
+  }
+}
+</script>
 </head>
 <body>
 <div class="phone" id="app">
   <div class="overlay" id="overlay"></div>
   <div class="toast" id="toast"></div>
 
-  <!-- ══ SPLASH ══ -->
+  <!-- ══ SPLASH ══ (loading state) -->
   <div class="screen active" id="splash">
-    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;text-align:center;">
-      <div class="splash-emoji">🍽️</div>
-      <div class="splash-logo">RECIPY</div>
-      <div class="splash-sub">Planifiez, cuisinez, savourez</div>
-      <button class="splash-btn" id="btn-start">Commencer</button>
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;text-align:center;background:linear-gradient(160deg,#1A1A2E,#16213E,#0F3460);">
+      <div style="font-size:72px;margin-bottom:14px;">🍽️</div>
+      <div style="font-family:'Playfair Display',Georgia,serif;font-size:48px;font-weight:900;color:#fff;">RECIPY</div>
+      <div style="color:rgba(255,255,255,.4);font-size:13px;margin-top:6px;">Chargement…</div>
+    </div>
+  </div>
+
+  <!-- ══ FIREBASE AUTH ══ -->
+  <div class="screen" id="fb-auth">
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;width:100%;text-align:center;padding:40px 0 20px;">
+      <div class="fb-auth-emoji">🍽️</div>
+      <div class="fb-auth-logo">RECIPY</div>
+      <div class="fb-auth-sub">Planifiez, cuisinez, savourez</div>
+      <div class="fb-auth-box">
+        <button class="fb-btn-google" id="fb-btn-google">
+          <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.175 0 7.55 0 9s.348 2.825.957 4.039l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z"/></svg>
+          Continuer avec Google
+        </button>
+        <div class="fb-divider">ou</div>
+        <input class="fb-inp" id="fb-email" type="email" placeholder="Email" autocomplete="email">
+        <input class="fb-inp" id="fb-password" type="password" placeholder="Mot de passe" autocomplete="current-password">
+        <div class="fb-error" id="fb-error"></div>
+        <button class="fb-btn-email" id="fb-btn-signin">Se connecter</button>
+        <div class="fb-toggle" id="fb-toggle-mode">Pas encore de compte ? <span>Créer un compte</span></div>
+      </div>
     </div>
   </div>
 
@@ -662,7 +723,7 @@ html{height:100%;overflow:hidden;}
     <div class="main-hdr">
       <div class="main-title">Recipy</div>
       <button class="icon-btn" id="btn-filter">🔧</button>
-      <button class="btn-profile" id="btn-open-profile">👤</button>
+      <button class="btn-profile" id="btn-open-profile" style="position:relative;">👤<div class="sync-dot" id="sync-dot"></div></button>
     </div>
     <div class="filt-bar">
       <div class="filt-pill active" id="fp0">Tout</div>
@@ -1607,6 +1668,7 @@ function saveCustomRecipe(){
   }
 
   toast("✅ Recette ajoutée au swipe !");
+  scheduleSyncToCloud();
   resetCreateForm();
   switchCreateTab("list");
 }
@@ -1916,7 +1978,7 @@ function computeShoppingList(){
 /* ═══════════════════════════════════════════
    NAV — single source of truth
 ═══════════════════════════════════════════ */
-var SCREEN_TAB={main:0,detail:0,saved:1,calendar:2,shopping:3,prefs:3,create:4,profile:0};
+var SCREEN_TAB={main:0,detail:0,saved:1,calendar:2,shopping:3,prefs:3,create:4,profile:0,"fb-auth":-1};
 
 function updateNavIndicator(nav){
   var btns=nav.querySelectorAll(".nav-btn");
@@ -2059,6 +2121,7 @@ function likeRecipe(id){
   if(isLiked(id)) return false;
   state.likedIds.push(id);
   updateBadges(true);
+  scheduleSyncToCloud();
   return true;
 }
 function unlikeRecipe(id){
@@ -2068,6 +2131,7 @@ function unlikeRecipe(id){
   var si=state.selectedIds.indexOf(id);
   if(si!==-1) state.selectedIds.splice(si,1);
   updateBadges(false);
+  scheduleSyncToCloud();
 }
 function getRecipe(id){
   var all=RECIPES.concat(CUSTOM_RECIPES);
@@ -2483,6 +2547,7 @@ function confirmPlanning(){
   renderShoppingList();
   var dayName=DAYS_FULL[state.pickerDay];
   var moment=state.pickerTime==="midi"?"à midi":"le soir";
+  scheduleSyncToCloud();
   toast("📅 "+r.title+" ajoutée "+moment+" ("+dayName+")");
 }
 
@@ -2562,6 +2627,7 @@ function renderCalendar(){
           renderShoppingList();
           state.checkedItems={};
         updateBadges(false);
+        scheduleSyncToCloud();
         toast("Repas retiré du planning");
         });
         // Drag start
@@ -3652,5 +3718,223 @@ if('serviceWorker' in navigator){
   }, { passive: true });
 })();
 </script>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   RECIPY — MODULE FIREBASE
+   ▸ Remplace YOUR_API_KEY etc. par ta config Firebase
+   ▸ Toute la logique auth + sync est ici, isolée du reste
+═══════════════════════════════════════════════════════════════ */
+
+/* ─── 0. CONFIG — À REMPLACER par ta vraie config Firebase ─── */
+var FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyCt3unRAr7rKFjuT7Rh7n6MQLY5xdP59nE",
+  authDomain:        "recipy-d24c5.firebaseapp.com",
+  projectId:         "recipy-d24c5",
+  storageBucket:     "recipy-d24c5.firebasestorage.app",
+  messagingSenderId: "935869802613",
+  appId:             "1:935869802613:web:b7b271d08e4bf3c061303c",
+  measurementId:     "G-BLM0J4K773"
+};
+
+/* ─── 1. INIT ─────────────────────────────────────────────── */
+var _fbApp  = null;
+var _fbAuth = null;
+var _fbDb   = null;
+var _fbUser = null;          // utilisateur connecté ou null
+var _syncTimer = null;       // debounce timer
+var _isOnline  = navigator.onLine;
+
+try {
+  _fbApp  = firebase.initializeApp(FIREBASE_CONFIG);
+  _fbAuth = firebase.auth();
+  _fbDb   = firebase.firestore();
+  /* Persistence offline Firestore */
+  _fbDb.enablePersistence({ synchronizeTabs: true })
+       .catch(function(e){ console.warn("Firestore persistence:", e.code); });
+} catch(e) {
+  console.error("Firebase init error:", e);
+}
+
+/* ─── 2. SYNC DOT ─────────────────────────────────────────── */
+function setSyncDot(status){ /* online | syncing | offline */
+  var dot = document.getElementById("sync-dot");
+  if(!dot) return;
+  dot.className = "sync-dot" + (status !== "online" ? " " + status : "");
+}
+window.addEventListener("online",  function(){ _isOnline=true;  setSyncDot("online");  flushSyncToCloud(); });
+window.addEventListener("offline", function(){ _isOnline=false; setSyncDot("offline"); });
+
+/* ─── 3. SYNC → CLOUD (debounced 1,5 s) ─────────────────── */
+function scheduleSyncToCloud(){
+  if(!_fbUser) return;              // non connecté, on ne fait rien
+  setSyncDot("syncing");
+  clearTimeout(_syncTimer);
+  _syncTimer = setTimeout(flushSyncToCloud, 1500);
+}
+
+function flushSyncToCloud(){
+  if(!_fbUser || !_fbDb) return;
+  var uid = _fbUser.uid;
+  var payload = {
+    likedIds:      state.likedIds.slice(),
+    weekPlanning:  Object.assign({}, state.weekPlanning),
+    checkedItems:  Object.assign({}, state.checkedItems),
+    profile:       Object.assign({}, state.profile),
+    customRecipes: CUSTOM_RECIPES.map(function(r){ return Object.assign({}, r); }),
+    updatedAt:     firebase.firestore.FieldValue.serverTimestamp()
+  };
+  _fbDb.collection("users").doc(uid).set(payload, { merge: true })
+    .then(function(){ setSyncDot("online"); })
+    .catch(function(e){ console.warn("Sync error:", e); setSyncDot("offline"); });
+}
+
+/* ─── 4. SYNC ← CLOUD (chargement initial) ────────────────── */
+function loadFromCloud(uid){
+  _fbDb.collection("users").doc(uid).get()
+    .then(function(doc){
+      if(!doc.exists){ flushSyncToCloud(); return; } /* premier login */
+      var d = doc.data();
+      if(d.likedIds)      state.likedIds      = d.likedIds;
+      if(d.weekPlanning)  state.weekPlanning  = d.weekPlanning;
+      if(d.checkedItems)  state.checkedItems  = d.checkedItems;
+      if(d.profile)       state.profile       = Object.assign(state.profile, d.profile);
+      if(d.customRecipes && d.customRecipes.length){
+        CUSTOM_RECIPES = d.customRecipes;
+        /* Réajuster le compteur d'ID custom */
+        var maxId = d.customRecipes.reduce(function(m,r){ return Math.max(m, r.id||0); }, 9999);
+        if(typeof _customNextId !== "undefined") _customNextId = maxId + 1;
+      }
+      /* Re-render après chargement */
+      _buildDeck(false);
+      renderCard();
+      renderSavedScreen();
+      renderCalendar();
+      renderShoppingList();
+      updateBadges(false);
+      setSyncDot("online");
+    })
+    .catch(function(e){ console.warn("Load error:", e); setSyncDot("offline"); });
+}
+
+/* ─── 5. AUTH STATE LISTENER ──────────────────────────────── */
+_fbAuth.onAuthStateChanged(function(user){
+  _fbUser = user;
+  if(user){
+    /* Utilisateur connecté → aller sur main */
+    loadFromCloud(user.uid);
+    /* Mettre à jour le profil email si vide */
+    if(!state.profile.email && user.email) state.profile.email = user.email;
+    navigateTo("main");
+    renderCard();
+    setSyncDot(_isOnline ? "online" : "offline");
+    /* Mettre à jour le bouton profil avec initiales */
+    var profBtn = document.getElementById("btn-open-profile");
+    if(profBtn){
+      var initiale = (user.displayName||user.email||"?")[0].toUpperCase();
+      profBtn.textContent = initiale;
+      profBtn.style.fontSize = "15px";
+      /* Remettre le sync dot */
+      var dot = document.createElement("div");
+      dot.className = "sync-dot";
+      dot.id = "sync-dot";
+      profBtn.style.position = "relative";
+      profBtn.appendChild(dot);
+    }
+  } else {
+    /* Non connecté → écran auth */
+    navigateTo("fb-auth");
+  }
+});
+
+/* ─── 6. AUTH HANDLERS ────────────────────────────────────── */
+function fbShowError(msg){
+  var el = document.getElementById("fb-error");
+  if(el) el.textContent = msg;
+}
+function fbClearError(){
+  var el = document.getElementById("fb-error");
+  if(el) el.textContent = "";
+}
+
+var _fbMode = "signin"; /* signin | signup */
+
+/* Google */
+document.getElementById("fb-btn-google").addEventListener("click", function(){
+  var provider = new firebase.auth.GoogleAuthProvider();
+  _fbAuth.signInWithPopup(provider).catch(function(e){ fbShowError(e.message); });
+});
+
+/* Email/password */
+document.getElementById("fb-btn-signin").addEventListener("click", function(){
+  fbClearError();
+  var email    = document.getElementById("fb-email").value.trim();
+  var password = document.getElementById("fb-password").value;
+  if(!email || !password){ fbShowError("Email et mot de passe requis"); return; }
+  if(_fbMode === "signin"){
+    _fbAuth.signInWithEmailAndPassword(email, password)
+      .catch(function(e){ fbShowError(fbErrMsg(e.code)); });
+  } else {
+    _fbAuth.createUserWithEmailAndPassword(email, password)
+      .catch(function(e){ fbShowError(fbErrMsg(e.code)); });
+  }
+});
+
+/* Toggle signin/signup */
+document.getElementById("fb-toggle-mode").addEventListener("click", function(){
+  fbClearError();
+  _fbMode = _fbMode === "signin" ? "signup" : "signin";
+  var btn  = document.getElementById("fb-btn-signin");
+  var text = document.getElementById("fb-toggle-mode");
+  if(_fbMode === "signup"){
+    btn.textContent  = "Créer mon compte";
+    text.innerHTML   = "Déjà un compte ? <span>Se connecter</span>";
+  } else {
+    btn.textContent  = "Se connecter";
+    text.innerHTML   = "Pas encore de compte ? <span>Créer un compte</span>";
+  }
+});
+
+/* Messages d'erreur lisibles */
+function fbErrMsg(code){
+  var msgs = {
+    "auth/user-not-found":       "Aucun compte avec cet email.",
+    "auth/wrong-password":       "Mot de passe incorrect.",
+    "auth/email-already-in-use": "Cet email est déjà utilisé.",
+    "auth/weak-password":        "Mot de passe trop court (6 caractères min).",
+    "auth/invalid-email":        "Adresse email invalide.",
+    "auth/too-many-requests":    "Trop de tentatives. Réessaie plus tard.",
+    "auth/network-request-failed": "Pas de connexion réseau."
+  };
+  return msgs[code] || "Erreur : " + code;
+}
+
+/* ─── 7. DÉCONNEXION depuis le profil ─────────────────────── */
+var _origLogout = document.getElementById("btn-prof-logout");
+if(_origLogout){
+  _origLogout.addEventListener("click", function(){
+    _fbAuth.signOut().then(function(){ navigateTo("fb-auth"); });
+  }, true); /* capture=true pour override le listener existant */
+}
+
+/* ─── 8. SAVE PROFILE → cloud ─────────────────────────────── */
+var _origSaveProfile = window.saveProfile;
+window.saveProfile = function(){
+  if(_origSaveProfile) _origSaveProfile();
+  scheduleSyncToCloud();
+};
+
+/* ─── 9. SHOPPING CHECK → cloud ──────────────────────────── */
+/* On patch renderShoppingList pour écouter les checkboxes */
+var _shopSyncTimer = null;
+document.addEventListener("click", function(e){
+  if(!e.target.closest || !e.target.closest(".shop-item")) return;
+  clearTimeout(_shopSyncTimer);
+  _shopSyncTimer = setTimeout(scheduleSyncToCloud, 2000);
+});
+
+console.log("✅ Recipy Firebase module loaded");
+</script>
+
 </body>
 </html>
