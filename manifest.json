@@ -2,9 +2,9 @@
   "name": "Recipy — Planificateur de repas",
   "short_name": "Recipy",
   "description": "Swipez, planifiez et faites vos courses intelligemment.",
-  "start_url": "./recipy.html",
-  "scope": "./",
-  "display": "standalone",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone"
   "orientation": "portrait-primary",
   "background_color": "#F5F5F7",
   "theme_color": "#FF3E7F",
