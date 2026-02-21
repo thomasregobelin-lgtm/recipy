@@ -1945,15 +1945,44 @@ function showScreen(id){
   if(t){t.style.display="flex";requestAnimationFrame(function(){t.classList.add("active");});}
 }
 
+/* ── Navigation history stack ── */
+var _navHistory = [];
+var _NAV_TAB_SCREENS = ['main','saved','calendar','shopping','create'];
+
 function navigateTo(screenId){
   closeModal();
-  if(screenId==="saved") renderSavedScreen();
+  var current = document.querySelector('.screen.active');
+  var currentId = current ? current.id : null;
+  if(currentId && currentId !== screenId){
+    var fromTab = _NAV_TAB_SCREENS.indexOf(currentId) !== -1;
+    var toTab   = _NAV_TAB_SCREENS.indexOf(screenId)  !== -1;
+    if(!(fromTab && toTab)){
+      _navHistory.push(currentId);
+      if(_navHistory.length > 20) _navHistory.shift();
+    } else {
+      _navHistory = [];
+    }
+  }
+  if(screenId==="saved")    renderSavedScreen();
   if(screenId==="calendar") renderCalendar();
   if(screenId==="shopping") renderShoppingList();
-  if(screenId==="create") renderCreateScreen();
+  if(screenId==="create")   renderCreateScreen();
   var tabIdx=SCREEN_TAB[screenId];
   if(tabIdx!==undefined) setActiveNav(tabIdx);
   showScreen(screenId);
+}
+
+function navigateBack(){
+  if(_navHistory.length === 0) return false;
+  var prev = _navHistory.pop();
+  if(prev==="saved")    renderSavedScreen();
+  if(prev==="calendar") renderCalendar();
+  if(prev==="shopping") renderShoppingList();
+  if(prev==="create")   renderCreateScreen();
+  var tabIdx=SCREEN_TAB[prev];
+  if(tabIdx!==undefined) setActiveNav(tabIdx);
+  showScreen(prev);
+  return true;
 }
 function goTo(id){navigateTo(id);}
 
@@ -3521,27 +3550,52 @@ if('serviceWorker' in navigator){
 (function(){
   var EDGE_ZONE    = 28;
   var MIN_DIST_X   = 60;
-  var MAX_DIST_Y   = 80;
-  var MAX_DURATION = 400;
+  var MAX_DIST_Y   = 100;
+  var MAX_DURATION = 500;
 
-  var touchStartX     = 0;
-  var touchStartY     = 0;
-  var touchStartTime  = 0;
-  var edgeSwipeActive = false;
+  var touchStartX    = 0;
+  var touchStartY    = 0;
+  var touchStartTime = 0;
+  var edgeActive     = false;
+  var indicator      = null;
+
+  /* Créer l'indicateur visuel (trait rose au bord gauche) */
+  function getIndicator(){
+    if(!indicator){
+      indicator = document.createElement('div');
+      indicator.style.cssText = [
+        'position:fixed','top:0','left:0','width:4px','height:100%',
+        'background:linear-gradient(to right,#FF3E7F,rgba(255,62,127,0))',
+        'opacity:0','transition:opacity .15s','z-index:9999',
+        'pointer-events:none','border-radius:0 4px 4px 0'
+      ].join(';');
+      document.body.appendChild(indicator);
+    }
+    return indicator;
+  }
 
   document.addEventListener('touchstart', function(e){
     var t = e.touches[0];
     touchStartX    = t.clientX;
     touchStartY    = t.clientY;
     touchStartTime = Date.now();
-    /* Ne s'active QUE depuis le bord gauche ET hors de la swipe-card */
     var onCard = !!(e.target.closest && e.target.closest('#swipe-card'));
-    edgeSwipeActive = (touchStartX <= EDGE_ZONE) && !onCard;
+    edgeActive = (touchStartX <= EDGE_ZONE) && !onCard;
+    if(edgeActive) getIndicator().style.opacity = '1';
+  }, { passive: true });
+
+  document.addEventListener('touchmove', function(e){
+    if(!edgeActive) return;
+    var dx = e.touches[0].clientX - touchStartX;
+    /* Largeur de l'indicateur suit le doigt */
+    var pct = Math.min(1, dx / 120);
+    getIndicator().style.width = (4 + pct * 20) + 'px';
   }, { passive: true });
 
   document.addEventListener('touchend', function(e){
-    if(!edgeSwipeActive) return;
-    edgeSwipeActive = false;
+    if(!edgeActive) return;
+    edgeActive = false;
+    if(indicator){ indicator.style.opacity = '0'; indicator.style.width = '4px'; }
 
     var t        = e.changedTouches[0];
     var distX    = t.clientX - touchStartX;
@@ -3549,12 +3603,20 @@ if('serviceWorker' in navigator){
     var duration = Date.now() - touchStartTime;
 
     if(distX >= MIN_DIST_X && distY <= MAX_DIST_Y && duration <= MAX_DURATION){
+      /* Essayer d'abord l'historique de navigation */
+      if(typeof navigateBack === 'function' && navigateBack()) return;
+      /* Fallback : si on est sur detail, cliquer le bouton retour */
       var detail = document.getElementById('detail');
       if(detail && detail.classList.contains('active')){
         var backBtn = document.getElementById('btn-det-back');
         if(backBtn) backBtn.click();
       }
     }
+  }, { passive: true });
+
+  document.addEventListener('touchcancel', function(){
+    edgeActive = false;
+    if(indicator){ indicator.style.opacity = '0'; indicator.style.width = '4px'; }
   }, { passive: true });
 })();
 </script>
