@@ -3286,5 +3286,48 @@ if('serviceWorker' in navigator){
   });
 }
 </script>
+<script>
+/* ═══════════════════════════════════════════
+   EDGE SWIPE — geste "retour" depuis bord gauche
+═══════════════════════════════════════════ */
+(function(){
+  var EDGE_ZONE    = 28;
+  var MIN_DIST_X   = 60;
+  var MAX_DIST_Y   = 80;
+  var MAX_DURATION = 400;
+
+  var touchStartX     = 0;
+  var touchStartY     = 0;
+  var touchStartTime  = 0;
+  var edgeSwipeActive = false;
+
+  document.addEventListener('touchstart', function(e){
+    var t = e.touches[0];
+    touchStartX    = t.clientX;
+    touchStartY    = t.clientY;
+    touchStartTime = Date.now();
+    edgeSwipeActive = touchStartX <= EDGE_ZONE;
+  }, { passive: true });
+
+  document.addEventListener('touchend', function(e){
+    if(!edgeSwipeActive) return;
+
+    var t        = e.changedTouches[0];
+    var distX    = t.clientX - touchStartX;
+    var distY    = Math.abs(t.clientY - touchStartY);
+    var duration = Date.now() - touchStartTime;
+
+    if(distX >= MIN_DIST_X && distY <= MAX_DIST_Y && duration <= MAX_DURATION){
+      var detail = document.getElementById('detail');
+      if(detail && detail.classList.contains('active')){
+        var backBtn = document.getElementById('btn-det-back');
+        if(backBtn) backBtn.click();
+      }
+    }
+
+    edgeSwipeActive = false;
+  }, { passive: true });
+})();
+</script>
 </body>
 </html>
