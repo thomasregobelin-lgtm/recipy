@@ -1124,10 +1124,29 @@ html{height:100%;overflow:hidden;}
    RECIPES DATA
 ═══════════════════════════════════════════ */
 var RECIPES=[
-  {id:0,emoji:"🍝",title:"Gratin de Raviole",desc:"Ravioles fraîches dorées au four avec crème, gruyère et herbes de Provence.",tag1:"PASTA",tag2:"VÉGÉTARIEN",time:"25 min",grad:"linear-gradient(135deg,#FFB347,#FF6B35)",
-   cat:{crème:["crème fraîche","20cl"],fromage:["gruyère râpé","80g"],epicerie:["herbes de provence","1 c.s."],pasta:["ravioles fraîches","300g"],laitier:["beurre","20g"]},
-   ing:[["Ravioles fraîches","300g"],["Crème fraîche","20cl"],["Gruyère râpé","80g"],["Herbes de Provence","1 c.s."],["Beurre","20g"]],
-   steps:["Préchauffer le four à 190°C.","Cuire les ravioles 2 min dans l'eau salée, égoutter.","Disposer dans un plat beurré, napper de crème, recouvrir de gruyère.","Enfourner 15 min jusqu'à gratinage doré."]},
+  {id:0,emoji:"🧀",title:"Gratin de Ravioles du Dauphiné",
+desc:"Ravioles du Dauphiné IGP gratinées à la crème entière et au gruyère, simplement poivrées.",
+tag1:"PASTA",tag2:"VÉGÉTARIEN",time:"30 min",
+grad:"linear-gradient(135deg,#F6D365,#FDA085)",
+cat:{
+  pasta:["ravioles du Dauphiné IGP surgelées","500g"],
+  crème:["crème liquide entière","650ml"],
+  fromage:["gruyère râpé","100g"],
+  epicerie:["poivre","à goût"]
+},
+ing:[
+  ["Ravioles du Dauphiné IGP surgelées","500g"],
+  ["Crème liquide entière","650ml"],
+  ["Gruyère râpé","100g"],
+  ["Poivre","à goût"]
+],
+steps:[
+  "Préchauffer le four à 210°C.",
+  "Verser les ravioles surgelées détachées dans un plat à gratin sans les décongeler.",
+  "Ajouter la crème liquide, poivrer selon votre goût et parsemer de gruyère râpé.",
+  "Enfourner 25 minutes jusqu’à ce que le dessus soit bien doré.",
+  "Servir immédiatement, accompagné d’une salade verte."
+]} 
   {id:1,emoji:"🥗",title:"Salade Niçoise",desc:"La salade emblématique de Nice : thon, anchois, olives, oeufs et tomates.",tag1:"SALADE",tag2:"TRADITIONNEL",time:"15 min",grad:"linear-gradient(135deg,#a8e6cf,#56ab2f)",
    ing:[["Thon en boîte","160g"],["Oeufs","2"],["Tomates","3"],["Olives noires","50g"],["Anchois","6 filets"],["Haricots verts","100g"]],
    steps:["Cuire les oeufs 9 min, refroidir et couper en quartiers.","Blanchir les haricots verts 5 min, refroidir.","Disposer tous les ingrédients sur un lit de salade.","Assaisonner d'huile d'olive, vinaigre, sel et poivre."]},
